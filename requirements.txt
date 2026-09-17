@@ -1,16 +1,8 @@
 # =============================================================================
-# EduPredict Trujillo - Dependencias de EJECUCIÓN
-# Dashboard (app.py) + despliegue en Vercel (api/index.py como ASGI).
-# NOTA: Vercel instala desde pyproject.toml ([project].dependencies); mantén
-# aquí las MISMAS versiones para el entorno local (instalación: pip install -r
-# requirements.txt). Para RETRENAR localmente añade también `imbalanced-learn`
-# y `shap` -> usa `requirements-train.txt`.
+# EduPredict Trujillo - Dependencias de EJECUCIÓN (Vercel + FastAPI)
 # =============================================================================
 
-streamlit>=1.53           # Dashboard web (+ ASGI/st.App; starlette/uvicorn van por defecto)
-pandas>=2.0,<3.0          # Manipulación de datos (probado en 2.x)
-numpy>=1.24               # Cálculo numérico
-scikit-learn>=1.3         # Carga del preprocesador (ColumnTransformer) del .pkl
-xgboost>=2.0              # Motor de inferencia del modelo EduPredict
-plotly>=5.18              # Visualizaciones interactivas (Gauge, histogramas, etc.)
-joblib>=1.3               # Carga de modelos .pkl
+fastapi>=0.100.0
+uvicorn>=0.20.0
+pandas>=2.0,<3.0
+numpy>=1.24

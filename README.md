@@ -43,13 +43,17 @@ sistemasInteligentes/
 ├── data.csv                  <- Descargar del UCI (colocar aquí)
 ├── train_model.py            <- Script de entrenamiento (XGBoost + SMOTE)
 ├── app.py                    <- Dashboard web (Streamlit)
-├── requirements.txt          <- Dependencias
+├── requirements.txt          <- Dependencias de ejecución (ligeras)
+├── requirements-train.txt    <- Dependencias para retrenar/convertir
+├── convertir_modelo.py       <- Exporta modelo+preprocesador a JSON ligero
+├── inferencia.py             <- Inferencia en numpy puro (para Vercel)
 └── README.md                 <- Este archivo
 
-# Artefactos generados tras entrenar (NO se incluyen en el repo):
-├── modelo_edupredict.pkl
-├── preprocessor_edupredict.pkl
-└── metricas_edupredict.json
+# Artefactos generados tras entrenar (los .pkl NO se suben a Vercel):
+├── modelo_edupredict.pkl           <- XGBoost (solo entrenamiento)
+├── preprocessor_edupredict.pkl     <- ColumnTransformer (solo entrenamiento)
+├── metricas_edupredict.json        <- Métricas para el dashboard
+└── modelo_edupredict_light.json    <- SE SUBE: modelo+preprocesador en 1 JSON (~0.8 MB)
 ```
 
 ---
@@ -87,8 +91,9 @@ pip install -r requirements.txt
 ```
 
 > **Para ejecutar SOLO el dashboard ya entrenado** basta `requirements.txt`.
-> **Para reentrenar el modelo** (`train_model.py`) se necesita además `shap` e
-> `imbalanced-learn` (SMOTE); instala en su lugar:
+> **Para retrenar** (`train_model.py`) **o regenerar el JSON ligero**
+> (`convertir_modelo.py`) se necesita además `xgboost`, `scikit-learn`,
+> `joblib`, `shap` e `imbalanced-learn`; instala en su lugar:
 > ```bash
 > pip install -r requirements-train.txt
 > ```
@@ -124,6 +129,22 @@ python train_model.py
    - `modelo_edupredict.pkl` → clasificador XGBoost.
    - `preprocessor_edupredict.pkl` → ColumnTransformer ajustado.
    - `metricas_edupredict.json` → métricas para el dashboard.
+
+### 1b. Convertir a formato ligero (antes de desplegar)
+
+```bash
+python convertir_modelo.py
+```
+
+**Qué hace el script:** fusiona los dos `.pkl` en **un solo JSON autocontenido**
+(`modelo_edupredict_light.json`, ~0.8 MB). El dashboard y Vercel cargan ESO, de
+modo que **no se necesitan xgboost / scipy / scikit-learn / joblib en
+producción** (solo numpy). Antes de guardarlo, verifica numéricamente que las
+probabilidades del JSON reproducen el `.pkl` original sobre **todas** las filas
+de `data.csv` (**diferencia máxima < 1e-6**).
+
+> Repite este paso cada vez que retrenes el modelo, y sube el nuevo
+> `modelo_edupredict_light.json` al repo.
 
 **Salida esperada (aproximada):**
 ```
@@ -171,10 +192,20 @@ app = App(str(Path(__file__).resolve().parents[1] / "app.py"))
 |---------|-----------|
 | `api/index.py` | Entrypoint ASGI (variable `app` de nivel superior). |
 | `pyproject.toml` | `[tool.vercel] entrypoint = "api.index:app"` (formato `módulo:variable` que exige Vercel). |
-| `requirements.txt` | Solo dependencias de **ejecución** (mantiene el bundle < 500 MB). |
-| `vercel.json` | `maxDuration` de la función (Hobby: máx. 300 s). |
+| `requirements.txt` | Solo dependencias de **ejecución** (numpy/pandas/plotly/streamlit). |
+| `vercel.json` | `fluid: true` (WebSockets), `build.env.VERCEL_SUPPORT_LARGE_FUNCTIONS=1` (fallback opcional) y `maxDuration` de la función. |
+| `modelo_edupredict_light.json` | Artefacto de inferencia (~0.8 MB) generado por `convertir_modelo.py`. |
 | `.vercelignore` | Excluye `.venv`, `__pycache__`, etc. de la subida. |
 | `.streamlit/config.toml` | `headless = true` y tema claro. |
+
+> **El bundle ya cabe sin Large Functions.** Antes la app necesitaba
+> `xgboost + scikit-learn + scipy + joblib` en producción (~880 MB), superando
+> el límite estándar de **500 MB**. Ahora la inferencia es **numpy puro**
+> (`inferencia.py` + `modelo_edupredict_light.json`), y el bundle queda
+> ~400 MB, dentro del límite. No se requiere ninguna variable de entorno.
+> `VERCEL_SUPPORT_LARGE_FUNCTIONS=1` se mantiene en `vercel.json` como
+> *fallback inocuo* por si Vercel decide admitir Large Functions en Python, pero
+> **no es necesaria** para que el deploy funcione.
 
 > Streamlit usa **WebSockets** (`/_stcore/stream`). Vercel los admite en
 > **Functions con Fluid compute** (activado por defecto en proyectos nuevos desde
@@ -182,21 +213,26 @@ app = App(str(Path(__file__).resolve().parents[1] / "app.py"))
 
 **Pasos:**
 
-1. Sube el repo a GitHub (incluye `modelo_edupredict.pkl`,
-   `preprocessor_edupredict.pkl`, `metricas_edupredict.json` y `data.csv`; ya
-   están versionados).
+1. Sube el repo a GitHub. **Incluye `modelo_edupredict_light.json`** (generado
+   por `convertir_modelo.py`). No hace falta revisar los `.pkl` (solo se usan
+   para retrenar; ya están versionados igualmente).
 2. En Vercel: **Add New → Project** → importa el repo.
 3. Framework: **Other** (el entrypoint se lee de `pyproject.toml`).
-4. Build/Install: deja los valores por defecto (Vercel instala
-   `requirements.txt`).
+4. Build/Install: deja los valores por defecto (Vercel instala desde
+   `pyproject.toml`, solo numpy/pandas/plotly/streamlit ≈ 400 MB).
 5. Deploy. La URL raíz servirá el dashboard.
+
+> Si el deploy fallara por tamaño aun así, revisa **Project Settings →
+> Functions** (Fluid Compute activado) y, solo como último recurso, agrega la
+> variable de entorno del proyecto `VERCEL_SUPPORT_LARGE_FUNCTIONS=1` (Large
+> Functions, beta para Python).
 
 **Notas:**
 - El primer acceso tras un *cold start* puede tardar (arranca
-  streamlit + xgboost + plotly + pandas); los siguientes son rápidos.
-- Mantén `requirements.txt` **ligero**: si agregas `shap` o `imbalanced-learn`
-  al despliegue, el bundle puede superar el límite de 250 MB (500 MB Python/
-  *Large Functions*). Esos paquetes viven en `requirements-train.txt`.
+  streamlit + plotly + pandas); los siguientes son rápidos.
+- Mantén `requirements.txt` **ligero**: si agregas `xgboost`, `scipy`,
+  `scikit-learn`, `joblib`, `shap` o `imbalanced-learn` al despliegue, el bundle
+  vuelve a superar los 500 MB. Esos paquetes viven en `requirements-train.txt`.
 - Para depurar localmente el mismo modo ASGI:
   ```bash
   pip install "streamlit[starlette]>=1.53"

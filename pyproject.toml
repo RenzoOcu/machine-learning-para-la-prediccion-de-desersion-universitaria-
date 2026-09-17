@@ -1,19 +1,14 @@
 [project]
 name = "edupredict-trujillo"
 version = "1.0.0"
-description = "Sistema predictivo de desercion universitaria (Streamlit ASGI para Vercel)"
+description = "Sistema predictivo de desercion universitaria (FastAPI + HTML5 para Vercel)"
 requires-python = ">=3.10"
 dependencies = [
-    "streamlit>=1.53",       # Dashboard (+ ASGI/st.App para Vercel; starlette/uvicorn van por defecto)
-    "pandas>=2.0,<3.0",      # Probado localmente en 2.x (evita cambios de pandas 3.0)
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "pandas>=2.0,<3.0",
     "numpy>=1.24",
-    "scikit-learn>=1.3",
-    "xgboost>=2.0",
-    "plotly>=5.18",
-    "joblib>=1.3",
 ]
 
 [tool.vercel]
-# Vercel espera "modulo:variable": carga la app ASGI `app` desde api/index.py
-# (Streamlit como ASGI: streamlit.starlette.App, requiere streamlit>=1.53).
 entrypoint = "api.index:app"

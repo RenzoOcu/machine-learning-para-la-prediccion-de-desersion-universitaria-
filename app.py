@@ -38,9 +38,12 @@
        asignaturas matriculadas se evalúan). Acreditaciones y cursos sin
        evaluación = 0 (lo más frecuente al ingresar).
 
-  Archivos requeridos (generados por `train_model.py`):
-    - modelo_edupredict.pkl        (clasificador XGBoost)
-    - preprocessor_edupredict.pkl  (ColumnTransformer: StandardScaler + OHE)
+  Archivos requeridos (generado por `convertir_modelo.py` a partir de los .pkl
+  de entrenamiento):
+    - modelo_edupredict_light.json   (modelo + preprocesador en formato ligero)
+
+  Flujo de entrenamiento:  python train_model.py   # .pkl originales
+                           python convertir_modelo.py  # -> JSON ligero
 
   Ejecución:  streamlit run app.py
 ===============================================================================
@@ -51,7 +54,6 @@ import os
 import sys
 import traceback
 
-import joblib
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -86,8 +88,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-RUTA_MODELO        = "modelo_edupredict.pkl"
-RUTA_PREPROCESADOR = "preprocessor_edupredict.pkl"
+RUTA_ARTEFACTOS    = "modelo_edupredict_light.json"
 RUTA_METRICAS      = "metricas_edupredict.json"
 RUTA_DATASET       = "data.csv"      # Solo para la pestaña de análisis
 URL_UCI            = ("https://uci-ics-mlr-prod.aws.uci.edu/dataset/697/"
@@ -599,17 +600,16 @@ def traducir_feature(nombre):
 # -----------------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
 def cargar_artefactos():
-    for ruta in (RUTA_MODELO, RUTA_PREPROCESADOR):
-        if not os.path.exists(ruta):
-            raise FileNotFoundError(
-                f"No se encontró '{ruta}'. Ejecuta primero: python train_model.py"
-            )
+    import inferencia
+    if not os.path.exists(inferencia.RUTA_ARTEFACTOS):
+        raise FileNotFoundError(
+            f"No se encontró '{inferencia.RUTA_ARTEFACTOS}'. Ejecuta primero: "
+            "python convertir_modelo.py"
+        )
     try:
-        modelo = joblib.load(RUTA_MODELO)
-        preprocesador = joblib.load(RUTA_PREPROCESADOR)
+        return inferencia.cargar_artefactos_ligeros()
     except Exception as e:
-        raise RuntimeError(f"Error al cargar los archivos .pkl: {e}") from e
-    return modelo, preprocesador
+        raise RuntimeError(f"Error al cargar el artefacto ligero: {e}") from e
 
 
 def cargar_metricas():
@@ -639,6 +639,8 @@ def cargar_dataset():
 def obtener_explicador_shap(modelo, preprocesador):
     """Devuelve un TreeExplainer de SHAP con un fondo de datos del dataset."""
     if not SHAP_DISPONIBLE:
+        return None, None
+    if getattr(modelo, "es_ligero", False):
         return None, None
     df = cargar_dataset()
     if df is None:
