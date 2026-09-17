@@ -1,16 +1,15 @@
 # =============================================================================
-# EduPredict Trujillo - Dependencias del proyecto
-# Sistema predictivo de deserción universitaria (UCI "Students' Dropout and
-# Academic Success"). UCV Trujillo, TIF Nivel III, 2026.
+# EduPredict Trujillo - Dependencias de EJECUCIÓN
+# Dashboard (app.py) + despliegue en Vercel (api/index.py como ASGI).
+# El .pkl del modelo ya está entrenado: para RETRENAR localmente añade también
+# `imbalanced-learn` y `shap` -> usa `requirements-train.txt`.
 # Instalación: pip install -r requirements.txt
 # =============================================================================
 
-streamlit>=1.30          # Dashboard web interactivo
+streamlit[starlette]>=1.53   # Dashboard web (+ ASGI / st.App para Vercel)
 pandas>=2.0              # Manipulación de datos tabulares
 numpy>=1.24              # Cálculo numérico
-scikit-learn>=1.3        # Preprocesamiento, métricas y división train/test
-xgboost>=2.0             # Algoritmo principal de gradiente boosting
-imbalanced-learn>=0.11   # SMOTE (balanceo de clases) y pipeline imbalanceado
+scikit-learn>=1.3        # Carga del preprocesador (ColumnTransformer) del .pkl
+xgboost>=2.0             # Motor de inferencia del modelo EduPredict
 plotly>=5.18             # Visualizaciones interactivas (Gauge, histogramas, etc.)
-joblib>=1.3              # Persistencia de modelos .pkl
-shap>=0.45               # Explicabilidad de predicciones individuales (SHAP)
+joblib>=1.3              # Carga de modelos .pkl

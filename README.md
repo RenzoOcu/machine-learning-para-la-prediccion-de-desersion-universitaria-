@@ -86,6 +86,13 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+> **Para ejecutar SOLO el dashboard ya entrenado** basta `requirements.txt`.
+> **Para reentrenar el modelo** (`train_model.py`) se necesita además `shap` e
+> `imbalanced-learn` (SMOTE); instala en su lugar:
+> ```bash
+> pip install -r requirements-train.txt
+> ```
+
 > Si estás en Windows y `xgboost` fallara, instálalo por separado:
 > ```powershell
 > pip install xgboost
@@ -143,6 +150,58 @@ El navegador se abrirá en `http://localhost:8501`.
 | 🏠 **Inicio** | Proyecto, metodología, ODS 4.3 y métricas del modelo entrenado. |
 | 📝 **Predictor Individual** | Formulario con las variables más influyentes (Admission grade, unidades aprobadas 1er/2do semestre, Scholarship holder, Unemployment rate, Age at enrollment, Gender). Al pulsar **"Predecir"** construye la fila completa de 36 columnas, aplica el preprocesador y usa `model.predict_proba()` para obtener el % de riesgo. Muestra un **gauge Plotly** con codificación por colores: 🔴 >60 % alto · 🟡 30–60 % medio · 🟢 <30 % bajo, con recomendaciones personalizadas. |
 | 📊 **Análisis de Datos** | Importancia de características del modelo, KPIs, distribución del target, histogramas, boxplots y matriz de correlación (requiere `data.csv` en la carpeta). |
+
+---
+
+## 🚀 Despliegue en Vercel (Streamlit como ASGI)
+
+El dashboard se sirve en Vercel como una **Vercel Function de Python** que expone
+Streamlit mediante su modo ASGI experimental (`streamlit.starlette.App`, Streamlit
+**≥ 1.53**). Un solo archivo, `api/index.py`, exporta la app:
+
+```python
+# api/index.py
+from streamlit.starlette import App
+app = App(str(Path(__file__).resolve().parents[1] / "app.py"))
+```
+
+**Configuración ya incluida en el repo:**
+
+| Archivo | Propósito |
+|---------|-----------|
+| `api/index.py` | Entrypoint ASGI (variable `app` de nivel superior). |
+| `pyproject.toml` | `[tool.vercel] entrypoint = "api.index:app"` (formato `módulo:variable` que exige Vercel). |
+| `requirements.txt` | Solo dependencias de **ejecución** (mantiene el bundle < 500 MB). |
+| `vercel.json` | `maxDuration` de la función (Hobby: máx. 300 s). |
+| `.vercelignore` | Excluye `.venv`, `__pycache__`, etc. de la subida. |
+| `.streamlit/config.toml` | `headless = true` y tema claro. |
+
+> Streamlit usa **WebSockets** (`/_stcore/stream`). Vercel los admite en
+> **Functions con Fluid compute** (activado por defecto en proyectos nuevos desde
+> abril de 2025, y en *Public Beta* para Python). No hace falta configuración extra.
+
+**Pasos:**
+
+1. Sube el repo a GitHub (incluye `modelo_edupredict.pkl`,
+   `preprocessor_edupredict.pkl`, `metricas_edupredict.json` y `data.csv`; ya
+   están versionados).
+2. En Vercel: **Add New → Project** → importa el repo.
+3. Framework: **Other** (el entrypoint se lee de `pyproject.toml`).
+4. Build/Install: deja los valores por defecto (Vercel instala
+   `requirements.txt`).
+5. Deploy. La URL raíz servirá el dashboard.
+
+**Notas:**
+- El primer acceso tras un *cold start* puede tardar (arranca
+  streamlit + xgboost + plotly + pandas); los siguientes son rápidos.
+- Mantén `requirements.txt` **ligero**: si agregas `shap` o `imbalanced-learn`
+  al despliegue, el bundle puede superar el límite de 250 MB (500 MB Python/
+  *Large Functions*). Esos paquetes viven en `requirements-train.txt`.
+- Para depurar localmente el mismo modo ASGI:
+  ```bash
+  pip install "streamlit[starlette]>=1.53"
+  uvicorn api.index:app --host 0.0.0.0 --port 8501
+  ```
 
 ---
 

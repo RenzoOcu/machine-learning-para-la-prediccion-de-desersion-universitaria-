@@ -1,0 +1,13 @@
+# =============================================================================
+# EduPredict Trujillo - Dependencias para ENTRENAR / RETRENAR el modelo
+# (local). Incluye todo lo de requirements.txt más lo exclusivo de
+# `train_model.py` (SMOTE) y de la explicabilidad SHAP del dashboard.
+# Atención: estos paquetes NO van en Vercel (engordan el bundle sin aportar
+# a la inferencia) -> ver requirements.txt.
+# Instalación: pip install -r requirements-train.txt
+# =============================================================================
+
+-r requirements.txt
+
+imbalanced-learn>=0.11   # SMOTE (balanceo de clases) dentro de train_model.py
+shap>=0.45               # Explicabilidad SHAP (opcional: app.py tiene fallback)

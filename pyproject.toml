@@ -1,0 +1,4 @@
+[tool.vercel]
+# Vercel espera "modulo:variable": carga la app ASGI `app` desde api/index.py
+# (Streamlit como ASGI: streamlit.starlette.App, requiere streamlit>=1.53).
+entrypoint = "api.index:app"
