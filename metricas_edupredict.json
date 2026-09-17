@@ -1,0 +1,36 @@
+{
+  "accuracy": 0.8824858757062147,
+  "precision_dropout": 0.8488372093023255,
+  "recall_dropout": 0.7711267605633803,
+  "f1_dropout": 0.8081180811808119,
+  "auc_roc": 0.9360572754329638,
+  "confusion_matrix": [
+    [
+      562,
+      39
+    ],
+    [
+      65,
+      219
+    ]
+  ],
+  "clases_modelo": [
+    0,
+    1
+  ],
+  "distribucion_original": {
+    "0": 3003,
+    "1": 1421
+  },
+  "distribucion_binarizada": {
+    "Dropout(1)": 1421,
+    "Graduado/Enrolled(0)": 3003
+  },
+  "interpretacion_clases": "El modelo se entrenó binarizando Target: Dropout=1 (clase de interés) frente a Graduate/Enrolled=0. El 'riesgo de deserción' mostrado en el dashboard es P(clase=1) de predict_proba().",
+  "umbrales_riesgo": {
+    "BAJO": "0-30%",
+    "MEDIO": "30-60%",
+    "ALTO": ">=60%",
+    "nota": "Umbrales definidos por la APLICACIÓN para visualización; no son categorías aprendidas por el modelo."
+  }
+}
