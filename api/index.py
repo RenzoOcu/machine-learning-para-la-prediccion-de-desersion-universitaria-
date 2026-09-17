@@ -107,7 +107,7 @@ class StudentInput(BaseModel):
 @app.get("/api/health")
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "app": "EduPredict Trujillo API", "mode": "lightweight-numpy"}
+    return {"status": "ok", "app": "EduPredict Trujillo API", "mode": "lightweight-numpy", "author": "Renzo Ocupa"}
 
 @app.get("/api/metrics")
 @app.get("/metrics")
@@ -238,7 +238,7 @@ def predict_student(data: StudentInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 # -----------------------------------------------------------------------------
-# Dashboard Web UI (HTML5 + CSS Material + Plotly.js desde CDN)
+# Dashboard Web UI Animado (HTML5 + CSS Transitions + Plotly.js)
 # -----------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
@@ -252,7 +252,7 @@ def serve_dashboard():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduPredict Trujillo - Sistema Predictivo de Deserción Universitaria</title>
+    <title>EduPredict Trujillo - Prototipo Desarrollado por Renzo Ocupa</title>
 
     <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -264,6 +264,7 @@ def serve_dashboard():
     <style>
         :root {
             --primary: #4285F4;
+            --primary-gradient: linear-gradient(135deg, #4285F4 0%, #1A73E8 100%);
             --primary-hover: #3367D6;
             --success: #34A853;
             --warning: #FBBC04;
@@ -273,10 +274,10 @@ def serve_dashboard():
             --text-main: #202124;
             --text-sub: #5F6368;
             --border-color: #E0E0E0;
-            --shadow-sm: 0 1px 3px rgba(60,64,67,0.12), 0 1px 2px rgba(60,64,67,0.24);
-            --shadow-md: 0 4px 12px rgba(60,64,67,0.15);
-            --radius-md: 12px;
-            --radius-lg: 16px;
+            --shadow-sm: 0 2px 6px rgba(60,64,67,0.08);
+            --shadow-hover: 0 8px 24px rgba(60,64,67,0.16);
+            --radius-md: 14px;
+            --radius-lg: 18px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -286,14 +287,16 @@ def serve_dashboard():
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.5;
-            padding-bottom: 2rem;
+            padding-bottom: 3rem;
+            overflow-x: hidden;
         }
 
-        /* App Bar Header */
+        /* App Bar Header con Animación */
         .app-bar {
-            background-color: var(--surface);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
+            padding: 0.9rem 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -301,47 +304,78 @@ def serve_dashboard():
             position: sticky;
             top: 0;
             z-index: 100;
+            animation: fadeInDown 0.6s ease;
         }
 
         .brand-container {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.8rem;
         }
 
-        .brand-icon {
-            font-size: 2.2rem;
-            color: var(--primary);
+        .brand-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+            animation: pulseGlow 3s infinite alternate;
         }
 
         .brand-title {
             font-family: 'Google Sans', sans-serif;
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: var(--text-main);
+            letter-spacing: -0.3px;
         }
 
         .brand-subtitle {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-sub);
+        }
+
+        .author-badge {
+            background: #E8F0FE;
+            color: #1967D2;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 1px solid #D2E3FC;
+            transition: all 0.3s ease;
+        }
+
+        .author-badge:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 10px rgba(25, 103, 210, 0.15);
         }
 
         .container {
             max-width: 1400px;
             margin: 1.5rem auto;
             padding: 0 1.5rem;
+            animation: fadeInUp 0.7s ease;
         }
 
-        /* Navigation Tabs */
+        /* Tabs animados */
         .tabs {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
             border-bottom: 2px solid var(--border-color);
             margin-bottom: 1.5rem;
+            position: relative;
         }
 
         .tab-btn {
-            padding: 0.8rem 1.4rem;
+            padding: 0.85rem 1.4rem;
             border: none;
             background: none;
             font-family: 'Google Sans', sans-serif;
@@ -353,27 +387,37 @@ def serve_dashboard():
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px 8px 0 0;
         }
 
-        .tab-btn:hover { color: var(--primary); }
+        .tab-btn:hover {
+            color: var(--primary);
+            background-color: rgba(66, 133, 244, 0.05);
+        }
+
         .tab-btn.active {
             color: var(--primary);
             border-bottom-color: var(--primary);
             font-weight: 700;
+            background-color: rgba(66, 133, 244, 0.08);
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Grid Layout */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
 
-        .grid-2col {
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Layout Grid */
+        .grid-layout, .grid-2col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
@@ -383,14 +427,20 @@ def serve_dashboard():
             .grid-layout, .grid-2col { grid-template-columns: 1fr; }
         }
 
-        /* Card Panels */
+        /* Cards Animadas */
         .card {
             background: var(--surface);
             border-radius: var(--radius-md);
-            padding: 1.5rem;
+            padding: 1.6rem;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-sm);
             margin-bottom: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
         }
 
         .card-header {
@@ -408,23 +458,21 @@ def serve_dashboard():
 
         .card-header .material-icons-outlined { color: var(--primary); }
 
-        /* Form Styling */
-        .form-section {
-            margin-bottom: 1.2rem;
-        }
+        /* Formulario */
+        .form-section { margin-bottom: 1.2rem; }
 
         .form-section-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             margin-bottom: 0.8rem;
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 1rem;
         }
 
@@ -447,23 +495,23 @@ def serve_dashboard():
             font-size: 0.9rem;
             font-family: inherit;
             background-color: #FAFAFA;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.25s ease;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+            box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.15);
             background-color: #FFFFFF;
         }
 
         .btn-predict {
             width: 100%;
-            padding: 0.9rem;
-            background-color: var(--primary);
+            padding: 0.95rem;
+            background: var(--primary-gradient);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-family: 'Google Sans', sans-serif;
             font-size: 1.05rem;
             font-weight: 700;
@@ -471,55 +519,61 @@ def serve_dashboard():
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            box-shadow: var(--shadow-sm);
-            transition: background-color 0.2s ease, transform 0.1s ease;
+            gap: 0.6rem;
+            box-shadow: 0 4px 14px rgba(66, 133, 244, 0.35);
+            transition: all 0.3s ease;
             margin-top: 1rem;
         }
 
         .btn-predict:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.45);
         }
 
-        /* Results Display */
+        .btn-predict:active { transform: translateY(0); }
+
+        /* Resultados con animación */
         .result-card {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 1.5rem;
+            padding: 1.6rem;
             border-radius: var(--radius-md);
             background-color: #FFFFFF;
             border: 2px solid var(--border-color);
+            transition: border-color 0.4s ease;
         }
 
         .risk-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 1.2rem;
-            border-radius: 20px;
+            gap: 0.5rem;
+            padding: 0.45rem 1.4rem;
+            border-radius: 30px;
             font-family: 'Google Sans', sans-serif;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             color: white;
             margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .gauge-container {
             width: 100%;
-            height: 240px;
+            height: 250px;
         }
 
         .rec-box {
-            background-color: #F1F3F4;
-            border-left: 4px solid var(--primary);
-            padding: 1rem;
-            border-radius: 8px;
+            background-color: #F8F9FA;
+            border-left: 5px solid var(--primary);
+            padding: 1.1rem;
+            border-radius: 10px;
             width: 100%;
             text-align: left;
             margin-top: 1rem;
+            animation: fadeIn 0.5s ease;
         }
 
         .rec-box h4 {
@@ -535,9 +589,9 @@ def serve_dashboard():
             color: var(--text-sub);
         }
 
-        .rec-list li { margin-bottom: 0.3rem; }
+        .rec-list li { margin-bottom: 0.35rem; }
 
-        /* Metrics grid */
+        /* Cards de Métricas */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -547,16 +601,23 @@ def serve_dashboard():
 
         .metric-card {
             background: white;
-            padding: 1.2rem;
+            padding: 1.3rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             text-align: center;
             box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
         }
 
         .metric-val {
             font-family: 'Google Sans', sans-serif;
-            font-size: 2rem;
+            font-size: 2.1rem;
             font-weight: 700;
             color: var(--primary);
         }
@@ -567,7 +628,6 @@ def serve_dashboard():
             margin-top: 0.2rem;
         }
 
-        /* Table styling */
         .custom-table {
             width: 100%;
             border-collapse: collapse;
@@ -591,6 +651,50 @@ def serve_dashboard():
             width: 100%;
             height: 380px;
         }
+
+        /* Footer del creador */
+        .creator-footer {
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-sub);
+            font-size: 0.88rem;
+        }
+
+        .creator-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #FFFFFF;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        /* Keyframe Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            from { box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3); }
+            to { box-shadow: 0 4px 20px rgba(66, 133, 244, 0.6); }
+        }
     </style>
 </head>
 <body>
@@ -598,11 +702,17 @@ def serve_dashboard():
     <!-- Header -->
     <header class="app-bar">
         <div class="brand-container">
-            <span class="material-icons-outlined brand-icon">school</span>
+            <div class="brand-icon-box">
+                <span class="material-icons-outlined">school</span>
+            </div>
             <div>
                 <div class="brand-title">EduPredict Trujillo</div>
-                <div class="brand-subtitle">Sistema Predictivo de Deserción Universitaria | Adaptación UCV Trujillo (2026)</div>
+                <div class="brand-subtitle">Sistema Predictivo de Deserción Universitaria | Adaptación UCV (2026)</div>
             </div>
+        </div>
+        <div class="author-badge">
+            <span class="material-icons-outlined" style="font-size:1.1rem;">code</span>
+            Desarrollado por Renzo Ocupa (17/09/2026)
         </div>
     </header>
 
@@ -820,9 +930,6 @@ def serve_dashboard():
                         Matriz de Confusión (Evaluación sobre Test original)
                     </div>
                     <div id="confusionPlot" class="plot-container-md"></div>
-                    <p style="font-size: 0.85rem; color: var(--text-sub); margin-top: 0.5rem;">
-                        Matriz de confusión evaluada en el conjunto de prueba independiente (885 filas no vistas en el entrenamiento). Demuestra baja tasa de falsos positivos (39) y alto poder preventivo.
-                    </p>
                 </div>
 
                 <div class="card">
@@ -905,22 +1012,33 @@ def serve_dashboard():
                 </div>
             </div>
         </div>
+
+        <!-- Pie de Autoría -->
+        <footer class="creator-footer">
+            <div class="creator-tag">
+                <span class="material-icons-outlined" style="color:var(--primary);">verified</span>
+                Programa desarrollado por Renzo Ocupa | 17/09/2026 Prototipo TIF Nivel III
+            </div>
+        </footer>
     </div>
 
     <script>
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
             
             event.currentTarget.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            const target = document.getElementById(tabId);
+            target.classList.add('active');
 
             if (tabId === 'tab-metrics') {
-                renderMetricsCharts();
+                setTimeout(renderMetricsCharts, 100);
             }
         }
 
-        // Render Gauge inicial
+        // Render Gauge con transición animada
         function renderGauge(value, title, color) {
             const data = [{
                 type: "indicator",
@@ -948,7 +1066,7 @@ def serve_dashboard():
                 font: { color: "#202124", family: "Roboto" }
             };
 
-            Plotly.newPlot('gaugePlot', data, layout, { responsive: true, displayModeBar: false });
+            Plotly.react('gaugePlot', data, layout, { responsive: true, displayModeBar: false });
         }
 
         // Render Gráficos de Métricas de Evaluación
@@ -971,7 +1089,7 @@ def serve_dashboard():
                     { x: 'Pred: Dropout (Deserción)', y: 'Real: Dropout (Deserción)', text: '219 (TP)', showarrow: false, font: { size: 16, color: 'white' } }
                 ]
             };
-            Plotly.newPlot('confusionPlot', cmData, cmLayout, { responsive: true, displayModeBar: false });
+            Plotly.react('confusionPlot', cmData, cmLayout, { responsive: true, displayModeBar: false });
 
             // Importance Chart
             const impData = [{
@@ -995,7 +1113,7 @@ def serve_dashboard():
                 margin: { t: 20, r: 20, l: 140, b: 30 },
                 xaxis: { title: 'Importancia Relativa XGBoost' }
             };
-            Plotly.newPlot('importancePlot', impData, impLayout, { responsive: true, displayModeBar: false });
+            Plotly.react('importancePlot', impData, impLayout, { responsive: true, displayModeBar: false });
 
             // Correlation Chart
             const corrData = [{
@@ -1015,7 +1133,7 @@ def serve_dashboard():
             const corrLayout = {
                 margin: { t: 20, r: 20, l: 90, b: 60 }
             };
-            Plotly.newPlot('correlationPlot', corrData, corrLayout, { responsive: true, displayModeBar: false });
+            Plotly.react('correlationPlot', corrData, corrLayout, { responsive: true, displayModeBar: false });
         }
 
         // Carga del Gauge por defecto al iniciar
@@ -1065,7 +1183,7 @@ def serve_dashboard():
 
                 const result = await res.json();
                 
-                // Actualizar Badge de Riesgo
+                // Actualizar Badge de Riesgo con animación
                 const badge = document.getElementById('riskBadge');
                 badge.style.backgroundColor = result.color_riesgo;
                 badge.innerHTML = `<span class="material-icons-outlined">warning</span> RIESGO ${result.nivel_riesgo} (${result.probabilidad_desercion}%)`;
