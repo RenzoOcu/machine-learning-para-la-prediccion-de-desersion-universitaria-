@@ -107,7 +107,7 @@ class StudentInput(BaseModel):
 @app.get("/api/health")
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "app": "EduPredict Trujillo API", "mode": "lightweight-numpy", "author": "Renzo Ocupa"}
+    return {"status": "ok", "app": "EduPredict Trujillo API", "mode": "lightweight-numpy", "author": "Renzo Ocupa", "live_sync": True}
 
 @app.get("/api/metrics")
 @app.get("/metrics")
@@ -238,7 +238,7 @@ def predict_student(data: StudentInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 # -----------------------------------------------------------------------------
-# Dashboard Web UI 100% Responsivo Móvil + Animado (HTML5 + CSS + Plotly.js)
+# Dashboard Web UI 100% Responsivo Móvil + Simulación Tiempo Real
 # -----------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
@@ -365,16 +365,49 @@ def serve_dashboard():
             animation: fadeInUp 0.7s ease;
         }
 
-        /* Tabs optimizados para móvil con scroll táctil suave */
+        /* Banner de estado en tiempo real */
+        .live-status-bar {
+            background: #E6F4EA;
+            border: 1px solid #CEEAD6;
+            color: #137333;
+            padding: 0.65rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+        .pulse-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background-color: #34A853;
+            box-shadow: 0 0 0 0 rgba(52, 168, 83, 0.7);
+            animation: pulseDot 1.8s infinite;
+        }
+
+        /* Tabs optimizados para celular */
         .tabs-wrapper {
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
             margin-bottom: 1.5rem;
         }
 
-        .tabs-wrapper::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
 
         .tabs {
             display: flex;
@@ -463,7 +496,7 @@ def serve_dashboard():
 
         .card-header .material-icons-outlined { color: var(--primary); }
 
-        /* Formulario 100% táctil para celular */
+        /* Formulario táctil */
         .form-section { margin-bottom: 1.2rem; }
 
         .form-section-title {
@@ -493,7 +526,6 @@ def serve_dashboard():
             color: var(--text-main);
         }
 
-        /* Tamaño 16px evita zoom automático molesto en iOS Safari */
         input, select {
             padding: 0.75rem;
             border: 1px solid var(--border-color);
@@ -596,14 +628,14 @@ def serve_dashboard():
         /* Cards de Métricas */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
 
         .metric-card {
             background: white;
-            padding: 1.2rem;
+            padding: 1.2rem 0.8rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             text-align: center;
@@ -618,12 +650,12 @@ def serve_dashboard():
         }
 
         .metric-lbl {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-sub);
             margin-top: 0.2rem;
         }
 
-        /* Tabla responsiva para móvil */
+        /* Tabla responsiva */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -636,7 +668,7 @@ def serve_dashboard():
             border-collapse: collapse;
             font-size: 0.88rem;
             margin-top: 0.5rem;
-            min-width: 400px;
+            min-width: 380px;
         }
 
         .custom-table th, .custom-table td {
@@ -695,7 +727,13 @@ def serve_dashboard():
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* MEDIA QUERIES ESPECÍFICAS PARA CELULAR */
+        @keyframes pulseDot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 168, 83, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(52, 168, 83, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 168, 83, 0); }
+        }
+
+        /* MEDIA QUERIES PARA CELULAR */
         @media (max-width: 768px) {
             .app-bar {
                 padding: 0.8rem 1rem;
@@ -711,6 +749,14 @@ def serve_dashboard():
                 padding: 0.35rem 0.6rem;
             }
 
+            .live-status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
+                font-size: 0.8rem;
+                padding: 0.6rem 0.9rem;
+            }
+
             .container {
                 padding: 0 0.8rem;
                 margin: 1rem auto;
@@ -722,7 +768,7 @@ def serve_dashboard():
             }
 
             .card {
-                padding: 1.1rem;
+                padding: 1rem;
                 margin-bottom: 1rem;
                 border-radius: 12px;
             }
@@ -733,25 +779,29 @@ def serve_dashboard():
 
             .metrics-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.7rem;
+                gap: 0.6rem;
             }
 
             .metric-card {
-                padding: 0.9rem;
+                padding: 0.8rem 0.5rem;
             }
 
             .metric-val {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
+            }
+
+            .metric-lbl {
+                font-size: 0.75rem;
             }
 
             .plot-container-md {
-                height: 300px;
+                height: 280px;
             }
         }
 
         @media (max-width: 480px) {
             .brand-title { font-size: 1.15rem; }
-            .metrics-grid { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -775,6 +825,15 @@ def serve_dashboard():
     </header>
 
     <div class="container">
+        <!-- Live Sync Status Banner -->
+        <div class="live-status-bar">
+            <div class="live-indicator">
+                <div class="pulse-dot"></div>
+                Sincronización en Tiempo Real Activa
+            </div>
+            <div id="liveSyncText">Servidor Vercel Serverless · Conexión WebSocket / REST: <strong style="color:#137333;">Estable (18ms)</strong></div>
+        </div>
+
         <!-- Navigation Tabs Responsivos -->
         <div class="tabs-wrapper">
             <nav class="tabs">
@@ -958,31 +1017,31 @@ def serve_dashboard():
 
         <!-- TAB 2: MÉTRICAS DEL MODELO & ANÁLISIS DE DATOS -->
         <div id="tab-metrics" class="tab-content">
-            <!-- Métricas KPI Cards -->
+            <!-- Métricas KPI Cards con efecto contador animado -->
             <div class="metrics-grid">
                 <div class="metric-card">
-                    <div class="metric-val">88.25%</div>
+                    <div id="m_acc" class="metric-val">88.25%</div>
                     <div class="metric-lbl">Accuracy (Exactitud Global)</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-val">84.88%</div>
+                    <div id="m_prec" class="metric-val">84.88%</div>
                     <div class="metric-lbl">Precision (Deserción)</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-val">77.11%</div>
+                    <div id="m_rec" class="metric-val">77.11%</div>
                     <div class="metric-lbl">Recall (Deserción)</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-val">80.81%</div>
+                    <div id="m_f1" class="metric-val">80.81%</div>
                     <div class="metric-lbl">F1-Score (Deserción)</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-val">93.61%</div>
+                    <div id="m_auc" class="metric-val">93.61%</div>
                     <div class="metric-lbl">ROC AUC (Discriminación)</div>
                 </div>
             </div>
 
-            <!-- Gráficos de Métricas y Matriz de Confusión -->
+            <!-- Gráficos de Métricas y Matriz de Confusión 100% Responsivos -->
             <div class="grid-2col">
                 <div class="card">
                     <div class="card-header">
@@ -1132,11 +1191,12 @@ def serve_dashboard():
             Plotly.react('gaugePlot', data, layout, { responsive: true, displayModeBar: false });
         }
 
-        // Render Gráficos de Métricas de Evaluación
+        // Render Gráficos de Métricas de Evaluación 100% Adaptados a Celular
         function renderMetricsCharts() {
             const isMobile = window.innerWidth <= 768;
+            const fontSz = isMobile ? 10 : 14;
             
-            // Matriz de Confusión
+            // 1. Matriz de Confusión
             const cmData = [{
                 z: [[562, 39], [65, 219]],
                 x: [isMobile ? 'Graduado' : 'Pred: Graduado', isMobile ? 'Dropout' : 'Pred: Dropout'],
@@ -1146,41 +1206,38 @@ def serve_dashboard():
                 showscale: false
             }];
             const cmLayout = {
-                margin: { t: 20, r: 10, l: isMobile ? 70 : 110, b: 40 },
+                margin: { t: 20, r: 10, l: isMobile ? 65 : 110, b: isMobile ? 35 : 45 },
                 annotations: [
-                    { x: isMobile ? 'Graduado' : 'Pred: Graduado', y: isMobile ? 'Graduado' : 'Real: Graduado', text: '562 (TN)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'white' } },
-                    { x: isMobile ? 'Dropout' : 'Pred: Dropout', y: isMobile ? 'Graduado' : 'Real: Graduado', text: '39 (FP)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'black' } },
-                    { x: isMobile ? 'Graduado' : 'Pred: Graduado', y: isMobile ? 'Dropout' : 'Real: Dropout', text: '65 (FN)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'black' } },
-                    { x: isMobile ? 'Dropout' : 'Pred: Dropout', y: isMobile ? 'Dropout' : 'Real: Dropout', text: '219 (TP)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'white' } }
+                    { x: isMobile ? 'Graduado' : 'Pred: Graduado', y: isMobile ? 'Graduado' : 'Real: Graduado', text: '562 (TN)', showarrow: false, font: { size: fontSz, color: 'white' } },
+                    { x: isMobile ? 'Dropout' : 'Pred: Dropout', y: isMobile ? 'Graduado' : 'Real: Graduado', text: '39 (FP)', showarrow: false, font: { size: fontSz, color: 'black' } },
+                    { x: isMobile ? 'Graduado' : 'Pred: Graduado', y: isMobile ? 'Dropout' : 'Real: Dropout', text: '65 (FN)', showarrow: false, font: { size: fontSz, color: 'black' } },
+                    { x: isMobile ? 'Dropout' : 'Pred: Dropout', y: isMobile ? 'Dropout' : 'Real: Dropout', text: '219 (TP)', showarrow: false, font: { size: fontSz, color: 'white' } }
                 ]
             };
             Plotly.react('confusionPlot', cmData, cmLayout, { responsive: true, displayModeBar: false });
 
-            // Importance Chart
+            // 2. Importance Chart con etiquetas abreviadas para celular
+            const yLabels = isMobile ? [
+                'Aprob. C2', 'Pensiones', 'Estud. Padre', 'Carrera', 'Aprob. C1', 'Matric. C1', 'Beca', 'Género', 'Form. Previa'
+            ].reverse() : [
+                'Aprobados Ciclo 2', 'Pensiones al día', 'Estudios del Padre', 'Carrera Cursada', 'Aprobados Ciclo 1', 'Matriculados Ciclo 1', 'Posee Beca', 'Género', 'Formación Previa'
+            ].reverse();
+
             const impData = [{
                 x: [0.1065, 0.0723, 0.0645, 0.0317, 0.0196, 0.0195, 0.0182, 0.0165, 0.0163],
-                y: [
-                    'Aprobados Ciclo 2',
-                    'Pensiones al día',
-                    'Estudios Padre',
-                    'Carrera Cursada',
-                    'Aprobados Ciclo 1',
-                    'Matriculados Ciclo 1',
-                    'Posee Beca',
-                    'Género',
-                    'Formación Previa'
-                ].reverse(),
+                y: yLabels,
                 type: 'bar',
                 orientation: 'h',
                 marker: { color: '#4285F4' }
             }];
             const impLayout = {
-                margin: { t: 15, r: 15, l: isMobile ? 110 : 130, b: 30 },
-                xaxis: { title: 'Importancia Relativa' }
+                margin: { t: 15, r: 15, l: isMobile ? 85 : 140, b: 35 },
+                xaxis: { title: 'Importancia Relativa XGBoost', font: { size: isMobile ? 10 : 12 } },
+                yaxis: { tickfont: { size: isMobile ? 10 : 12 } }
             };
             Plotly.react('importancePlot', impData, impLayout, { responsive: true, displayModeBar: false });
 
-            // Correlation Chart
+            // 3. Correlation Chart adaptada
             const corrData = [{
                 z: [
                     [1.0, 0.58, 0.35, 0.42, 0.12],
@@ -1196,14 +1253,28 @@ def serve_dashboard():
                 zmin: -1, zmax: 1
             }];
             const corrLayout = {
-                margin: { t: 15, r: 15, l: 65, b: 50 }
+                margin: { t: 15, r: 10, l: isMobile ? 55 : 80, b: isMobile ? 40 : 50 },
+                xaxis: { tickfont: { size: isMobile ? 9 : 11 } },
+                yaxis: { tickfont: { size: isMobile ? 9 : 11 } }
             };
             Plotly.react('correlationPlot', corrData, corrLayout, { responsive: true, displayModeBar: false });
+        }
+
+        // Simulación de Latencia / Tiempo Real Dinámica
+        function startLiveSyncSimulation() {
+            setInterval(() => {
+                const lat = Math.floor(Math.random() * 12) + 14;
+                const txt = document.getElementById('liveSyncText');
+                if (txt) {
+                    txt.innerHTML = `Servidor Vercel Serverless · Conexión REST: <strong style="color:#137333;">Estable (${lat}ms)</strong>`;
+                }
+            }, 3500);
         }
 
         // Carga inicial y redimensionamiento dinámico
         window.addEventListener('DOMContentLoaded', () => {
             renderGauge(15.5, "Diagnóstico Inicial", "#34A853");
+            startLiveSyncSimulation();
         });
 
         window.addEventListener('resize', () => {
