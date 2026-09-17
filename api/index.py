@@ -105,15 +105,18 @@ class StudentInput(BaseModel):
 # Endpoints de API
 # -----------------------------------------------------------------------------
 @app.get("/api/health")
+@app.get("/health")
 def health_check():
     return {"status": "ok", "app": "EduPredict Trujillo API", "mode": "lightweight-numpy"}
 
 @app.get("/api/metrics")
+@app.get("/metrics")
 def get_metrics_endpoint():
     metricas = get_metricas()
     return JSONResponse(content=metricas)
 
 @app.post("/api/predict")
+@app.post("/predict")
 def predict_student(data: StudentInput):
     try:
         modelo, preprocesador = get_artefactos()
@@ -238,6 +241,11 @@ def predict_student(data: StudentInput):
 # Dashboard Web UI (HTML5 + CSS Material + Plotly.js desde CDN)
 # -----------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
+@app.get("/index", response_class=HTMLResponse)
+@app.get("/index.py", response_class=HTMLResponse)
+@app.get("/api", response_class=HTMLResponse)
+@app.get("/api/index", response_class=HTMLResponse)
+@app.get("/api/index.py", response_class=HTMLResponse)
 def serve_dashboard():
     html_content = """<!DOCTYPE html>
 <html lang="es">
@@ -874,10 +882,18 @@ def serve_dashboard():
             };
 
             try {
-                const res = await fetch('/api/predict', {
+                // Probar endpoint relativo o /api/predict
+                let endpoint = '/api/predict';
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
+                }).catch(async () => {
+                    return await fetch('/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
                 });
 
                 if (!res.ok) throw new Error("Error en la predicción serverless");
@@ -906,3 +922,12 @@ def serve_dashboard():
 </body>
 </html>"""
     return HTMLResponse(content=html_content)
+
+# Catch-all GET handler para asegurar que cualquier ruta sirva la Dashboard UI
+@app.api_route("/{path_name:path}", methods=["GET"])
+def catch_all_dashboard(request: Request, path_name: str):
+    if path_name.startswith("api/metrics") or path_name == "metrics":
+        return get_metrics_endpoint()
+    if path_name.startswith("api/health") or path_name == "health":
+        return health_check()
+    return serve_dashboard()
