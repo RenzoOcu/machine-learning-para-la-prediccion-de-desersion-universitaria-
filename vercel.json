@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "fluid": true,
   "env": {
     "VERCEL_SUPPORT_LARGE_FUNCTIONS": "1"
   },
