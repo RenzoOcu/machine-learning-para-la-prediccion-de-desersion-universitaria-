@@ -373,8 +373,14 @@ def serve_dashboard():
             gap: 1.5rem;
         }
 
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
         @media (max-width: 992px) {
-            .grid-layout { grid-template-columns: 1fr; }
+            .grid-layout, .grid-2col { grid-template-columns: 1fr; }
         }
 
         /* Card Panels */
@@ -534,7 +540,7 @@ def serve_dashboard():
         /* Metrics grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
@@ -560,6 +566,31 @@ def serve_dashboard():
             color: var(--text-sub);
             margin-top: 0.2rem;
         }
+
+        /* Table styling */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .custom-table th {
+            background-color: #F1F3F4;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .plot-container-md {
+            width: 100%;
+            height: 380px;
+        }
     </style>
 </head>
 <body>
@@ -582,7 +613,7 @@ def serve_dashboard():
                 <span class="material-icons-outlined">psychology</span> Diagnóstico Predictivo
             </button>
             <button class="tab-btn" onclick="switchTab('tab-metrics')">
-                <span class="material-icons-outlined">bar_chart</span> Métricas del Modelo
+                <span class="material-icons-outlined">bar_chart</span> Métricas del Modelo & Análisis
             </button>
             <button class="tab-btn" onclick="switchTab('tab-info')">
                 <span class="material-icons-outlined">info</span> Adaptación Perú & Metodología
@@ -755,36 +786,100 @@ def serve_dashboard():
             </div>
         </div>
 
-        <!-- TAB 2: MÉTRICAS DEL MODELO -->
+        <!-- TAB 2: MÉTRICAS DEL MODELO & ANÁLISIS DE DATOS -->
         <div id="tab-metrics" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <span class="material-icons-outlined">verified</span>
-                    Métricas de Evaluación del Modelo Predictivo (XGBoost / Light JSON)
+            <!-- Métricas KPI Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-val">88.25%</div>
+                    <div class="metric-lbl">Accuracy (Exactitud Global)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">84.88%</div>
+                    <div class="metric-lbl">Precision (Deserción)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">77.11%</div>
+                    <div class="metric-lbl">Recall (Deserción)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">80.81%</div>
+                    <div class="metric-lbl">F1-Score (Deserción)</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">93.61%</div>
+                    <div class="metric-lbl">ROC AUC (Discriminación)</div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Métricas y Matriz de Confusión -->
+            <div class="grid-2col">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons-outlined">grid_on</span>
+                        Matriz de Confusión (Evaluación sobre Test original)
+                    </div>
+                    <div id="confusionPlot" class="plot-container-md"></div>
+                    <p style="font-size: 0.85rem; color: var(--text-sub); margin-top: 0.5rem;">
+                        Matriz de confusión evaluada en el conjunto de prueba independiente (885 filas no vistas en el entrenamiento). Demuestra baja tasa de falsos positivos (39) y alto poder preventivo.
+                    </p>
                 </div>
 
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-val">88.5%</div>
-                        <div class="metric-lbl">Accuracy (Exactitud Global)</div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons-outlined">leaderboard</span>
+                        Top Variables más Influyentes (XGBoost Feature Importance)
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-val">0.932</div>
-                        <div class="metric-lbl">ROC AUC (Capacidad Discriminativa)</div>
+                    <div id="importancePlot" class="plot-container-md"></div>
+                </div>
+            </div>
+
+            <!-- Tabla de Resumen de Clases y Datos del Dataset -->
+            <div class="grid-2col">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons-outlined">pie_chart</span>
+                        Distribución de Clases del Dataset UCI (4,424 Filas)
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-val">85.4%</div>
-                        <div class="metric-lbl">F1-Score Clase Deserción</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-val">&lt; 1e-6</div>
-                        <div class="metric-lbl">Error Modelo Ligero NumPy vs Original</div>
-                    </div>
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Estado Final</th>
+                                <th>Clase Binarizada</th>
+                                <th>Estudiantes</th>
+                                <th>Porcentaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Graduate (Graduado)</strong></td>
+                                <td>0 (Éxito)</td>
+                                <td>2,209</td>
+                                <td>49.9%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dropout (Abandonó)</strong></td>
+                                <td>1 (Riesgo)</td>
+                                <td>1,421</td>
+                                <td>32.1%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Enrolled (Continuante)</strong></td>
+                                <td>0 (Éxito)</td>
+                                <td>794</td>
+                                <td>17.9%</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <p style="color: var(--text-sub); font-size: 0.9rem; line-height: 1.6;">
-                    El modelo predictivo fue entrenado sobre un conjunto de datos de 4,424 estudiantes universitarios (dataset oficial del UCI Machine Learning Repository). La versión serverless desplegada en Vercel replica las 250 variables transformadas por el pipeline original utilizando aritmética <code>float32</code> pura en NumPy, garantizando un error nulo en la predicción.
-                </p>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="material-icons-outlined">table_chart</span>
+                        Matriz de Correlaciones Académicas
+                    </div>
+                    <div id="correlationPlot" class="plot-container-md"></div>
+                </div>
             </div>
         </div>
 
@@ -819,6 +914,10 @@ def serve_dashboard():
             
             event.currentTarget.classList.add('active');
             document.getElementById(tabId).classList.add('active');
+
+            if (tabId === 'tab-metrics') {
+                renderMetricsCharts();
+            }
         }
 
         // Render Gauge inicial
@@ -852,6 +951,73 @@ def serve_dashboard():
             Plotly.newPlot('gaugePlot', data, layout, { responsive: true, displayModeBar: false });
         }
 
+        // Render Gráficos de Métricas de Evaluación
+        function renderMetricsCharts() {
+            // Matriz de Confusión
+            const cmData = [{
+                z: [[562, 39], [65, 219]],
+                x: ['Pred: Graduado/Continuante', 'Pred: Dropout (Deserción)'],
+                y: ['Real: Graduado/Continuante', 'Real: Dropout (Deserción)'],
+                type: 'heatmap',
+                colorscale: 'Blues',
+                showscale: false
+            }];
+            const cmLayout = {
+                margin: { t: 20, r: 20, l: 120, b: 40 },
+                annotations: [
+                    { x: 'Pred: Graduado/Continuante', y: 'Real: Graduado/Continuante', text: '562 (TN)', showarrow: false, font: { size: 16, color: 'white' } },
+                    { x: 'Pred: Dropout (Deserción)', y: 'Real: Graduado/Continuante', text: '39 (FP)', showarrow: false, font: { size: 16, color: 'black' } },
+                    { x: 'Pred: Graduado/Continuante', y: 'Real: Dropout (Deserción)', text: '65 (FN)', showarrow: false, font: { size: 16, color: 'black' } },
+                    { x: 'Pred: Dropout (Deserción)', y: 'Real: Dropout (Deserción)', text: '219 (TP)', showarrow: false, font: { size: 16, color: 'white' } }
+                ]
+            };
+            Plotly.newPlot('confusionPlot', cmData, cmLayout, { responsive: true, displayModeBar: false });
+
+            // Importance Chart
+            const impData = [{
+                x: [0.1065, 0.0723, 0.0645, 0.0317, 0.0196, 0.0195, 0.0182, 0.0165, 0.0163],
+                y: [
+                    'Aprobados Ciclo 2',
+                    'Pensiones al día',
+                    'Estudios Padre',
+                    'Carrera Cursada',
+                    'Aprobados Ciclo 1',
+                    'Matriculados Ciclo 1',
+                    'Posee Beca',
+                    'Género',
+                    'Formación Previa'
+                ].reverse(),
+                type: 'bar',
+                orientation: 'h',
+                marker: { color: '#4285F4' }
+            }];
+            const impLayout = {
+                margin: { t: 20, r: 20, l: 140, b: 30 },
+                xaxis: { title: 'Importancia Relativa XGBoost' }
+            };
+            Plotly.newPlot('importancePlot', impData, impLayout, { responsive: true, displayModeBar: false });
+
+            // Correlation Chart
+            const corrData = [{
+                z: [
+                    [1.0, 0.58, 0.35, 0.42, 0.12],
+                    [0.58, 1.0, 0.28, 0.39, 0.08],
+                    [0.35, 0.28, 1.0, 0.76, -0.05],
+                    [0.42, 0.39, 0.76, 1.0, -0.09],
+                    [0.12, 0.08, -0.05, -0.09, 1.0]
+                ],
+                x: ['Nota Admisión', 'Nota Previa', 'Aprobados C1', 'Aprobados C2', 'PBI / Macro'],
+                y: ['Nota Admisión', 'Nota Previa', 'Aprobados C1', 'Aprobados C2', 'PBI / Macro'],
+                type: 'heatmap',
+                colorscale: 'RdBu',
+                zmin: -1, zmax: 1
+            }];
+            const corrLayout = {
+                margin: { t: 20, r: 20, l: 90, b: 60 }
+            };
+            Plotly.newPlot('correlationPlot', corrData, corrLayout, { responsive: true, displayModeBar: false });
+        }
+
         // Carga del Gauge por defecto al iniciar
         window.addEventListener('DOMContentLoaded', () => {
             renderGauge(15.5, "Diagnóstico Inicial", "#34A853");
@@ -882,7 +1048,6 @@ def serve_dashboard():
             };
 
             try {
-                // Probar endpoint relativo o /api/predict
                 let endpoint = '/api/predict';
                 const res = await fetch(endpoint, {
                     method: 'POST',
