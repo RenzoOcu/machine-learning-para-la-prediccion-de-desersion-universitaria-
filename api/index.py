@@ -238,7 +238,7 @@ def predict_student(data: StudentInput):
         raise HTTPException(status_code=500, detail=str(e))
 
 # -----------------------------------------------------------------------------
-# Dashboard Web UI Animado (HTML5 + CSS Transitions + Plotly.js)
+# Dashboard Web UI 100% Responsivo Móvil + Animado (HTML5 + CSS + Plotly.js)
 # -----------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 @app.get("/index", response_class=HTMLResponse)
@@ -251,7 +251,7 @@ def serve_dashboard():
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>EduPredict Trujillo - Prototipo Desarrollado por Renzo Ocupa</title>
 
     <!-- Google Fonts & Icons -->
@@ -282,21 +282,25 @@ def serve_dashboard():
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Roboto', 'Google Sans', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.5;
             padding-bottom: 3rem;
-            overflow-x: hidden;
         }
 
-        /* App Bar Header con Animación */
+        /* App Bar Header responsivo */
         .app-bar {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
-            padding: 0.9rem 2rem;
+            padding: 0.9rem 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -314,8 +318,8 @@ def serve_dashboard():
         }
 
         .brand-icon-box {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             background: var(--primary-gradient);
             display: flex;
@@ -323,12 +327,12 @@ def serve_dashboard():
             justify-content: center;
             color: white;
             box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-            animation: pulseGlow 3s infinite alternate;
+            flex-shrink: 0;
         }
 
         .brand-title {
             font-family: 'Google Sans', sans-serif;
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--text-main);
             letter-spacing: -0.3px;
@@ -351,35 +355,40 @@ def serve_dashboard():
             gap: 0.4rem;
             border: 1px solid #D2E3FC;
             transition: all 0.3s ease;
-        }
-
-        .author-badge:hover {
-            transform: scale(1.03);
-            box-shadow: 0 4px 10px rgba(25, 103, 210, 0.15);
+            white-space: nowrap;
         }
 
         .container {
             max-width: 1400px;
             margin: 1.5rem auto;
-            padding: 0 1.5rem;
+            padding: 0 1.2rem;
             animation: fadeInUp 0.7s ease;
         }
 
-        /* Tabs animados */
+        /* Tabs optimizados para móvil con scroll táctil suave */
+        .tabs-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* Firefox */
+            margin-bottom: 1.5rem;
+        }
+
+        .tabs-wrapper::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
         .tabs {
             display: flex;
-            gap: 0.6rem;
+            gap: 0.5rem;
             border-bottom: 2px solid var(--border-color);
-            margin-bottom: 1.5rem;
-            position: relative;
+            min-width: max-content;
         }
 
         .tab-btn {
-            padding: 0.85rem 1.4rem;
+            padding: 0.85rem 1.2rem;
             border: none;
             background: none;
             font-family: 'Google Sans', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             font-weight: 500;
             color: var(--text-sub);
             cursor: pointer;
@@ -387,8 +396,9 @@ def serve_dashboard():
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             border-radius: 8px 8px 0 0;
+            white-space: nowrap;
         }
 
         .tab-btn:hover {
@@ -416,22 +426,18 @@ def serve_dashboard():
             transform: translateY(0);
         }
 
-        /* Layout Grid */
+        /* Layout Grid Responsivo */
         .grid-layout, .grid-2col {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
 
-        @media (max-width: 992px) {
-            .grid-layout, .grid-2col { grid-template-columns: 1fr; }
-        }
-
         /* Cards Animadas */
         .card {
             background: var(--surface);
             border-radius: var(--radius-md);
-            padding: 1.6rem;
+            padding: 1.5rem;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-sm);
             margin-bottom: 1.5rem;
@@ -440,7 +446,6 @@ def serve_dashboard():
 
         .card:hover {
             box-shadow: var(--shadow-hover);
-            transform: translateY(-2px);
         }
 
         .card-header {
@@ -448,7 +453,7 @@ def serve_dashboard():
             align-items: center;
             gap: 0.6rem;
             font-family: 'Google Sans', sans-serif;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 700;
             margin-bottom: 1.2rem;
             color: var(--text-main);
@@ -458,7 +463,7 @@ def serve_dashboard():
 
         .card-header .material-icons-outlined { color: var(--primary); }
 
-        /* Formulario */
+        /* Formulario 100% táctil para celular */
         .form-section { margin-bottom: 1.2rem; }
 
         .form-section-title {
@@ -488,14 +493,16 @@ def serve_dashboard():
             color: var(--text-main);
         }
 
+        /* Tamaño 16px evita zoom automático molesto en iOS Safari */
         input, select {
-            padding: 0.65rem 0.8rem;
+            padding: 0.75rem;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 16px;
             font-family: inherit;
             background-color: #FAFAFA;
             transition: all 0.25s ease;
+            width: 100%;
         }
 
         input:focus, select:focus {
@@ -507,7 +514,7 @@ def serve_dashboard():
 
         .btn-predict {
             width: 100%;
-            padding: 0.95rem;
+            padding: 1rem;
             background: var(--primary-gradient);
             color: white;
             border: none;
@@ -523,22 +530,18 @@ def serve_dashboard():
             box-shadow: 0 4px 14px rgba(66, 133, 244, 0.35);
             transition: all 0.3s ease;
             margin-top: 1rem;
+            touch-action: manipulation;
         }
 
-        .btn-predict:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.45);
-        }
+        .btn-predict:active { transform: scale(0.98); }
 
-        .btn-predict:active { transform: translateY(0); }
-
-        /* Resultados con animación */
+        /* Resultados */
         .result-card {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 1.6rem;
+            padding: 1.5rem;
             border-radius: var(--radius-md);
             background-color: #FFFFFF;
             border: 2px solid var(--border-color);
@@ -553,16 +556,15 @@ def serve_dashboard():
             border-radius: 30px;
             font-family: 'Google Sans', sans-serif;
             font-weight: 700;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             color: white;
             margin-bottom: 1rem;
             box-shadow: var(--shadow-sm);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .gauge-container {
             width: 100%;
-            height: 250px;
+            height: 240px;
         }
 
         .rec-box {
@@ -594,49 +596,51 @@ def serve_dashboard():
         /* Cards de Métricas */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
 
         .metric-card {
             background: white;
-            padding: 1.3rem;
+            padding: 1.2rem;
             border-radius: var(--radius-md);
             border: 1px solid var(--border-color);
             text-align: center;
             box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
-        }
-
-        .metric-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-hover);
         }
 
         .metric-val {
             font-family: 'Google Sans', sans-serif;
-            font-size: 2.1rem;
+            font-size: 1.9rem;
             font-weight: 700;
             color: var(--primary);
         }
 
         .metric-lbl {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: var(--text-sub);
             margin-top: 0.2rem;
+        }
+
+        /* Tabla responsiva para móvil */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
         }
 
         .custom-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             margin-top: 0.5rem;
+            min-width: 400px;
         }
 
         .custom-table th, .custom-table td {
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 0.8rem;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
@@ -649,7 +653,7 @@ def serve_dashboard():
 
         .plot-container-md {
             width: 100%;
-            height: 380px;
+            height: 360px;
         }
 
         /* Footer del creador */
@@ -659,7 +663,7 @@ def serve_dashboard():
             margin-top: 2rem;
             border-top: 1px solid var(--border-color);
             color: var(--text-sub);
-            font-size: 0.88rem;
+            font-size: 0.85rem;
         }
 
         .creator-tag {
@@ -667,7 +671,7 @@ def serve_dashboard():
             align-items: center;
             gap: 0.5rem;
             background: #FFFFFF;
-            padding: 0.5rem 1.2rem;
+            padding: 0.5rem 1.1rem;
             border-radius: 30px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-sm);
@@ -682,18 +686,72 @@ def serve_dashboard():
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-15px); }
+            from { opacity: 0; transform: translateY(-12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes pulseGlow {
-            from { box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3); }
-            to { box-shadow: 0 4px 20px rgba(66, 133, 244, 0.6); }
+        /* MEDIA QUERIES ESPECÍFICAS PARA CELULAR */
+        @media (max-width: 768px) {
+            .app-bar {
+                padding: 0.8rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.6rem;
+            }
+
+            .author-badge {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.78rem;
+                padding: 0.35rem 0.6rem;
+            }
+
+            .container {
+                padding: 0 0.8rem;
+                margin: 1rem auto;
+            }
+
+            .grid-layout, .grid-2col {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .card {
+                padding: 1.1rem;
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.7rem;
+            }
+
+            .metric-card {
+                padding: 0.9rem;
+            }
+
+            .metric-val {
+                font-size: 1.5rem;
+            }
+
+            .plot-container-md {
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand-title { font-size: 1.15rem; }
+            .metrics-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -707,28 +765,30 @@ def serve_dashboard():
             </div>
             <div>
                 <div class="brand-title">EduPredict Trujillo</div>
-                <div class="brand-subtitle">Sistema Predictivo de Deserción Universitaria | Adaptación UCV (2026)</div>
+                <div class="brand-subtitle">Sistema Predictivo de Deserción Universitaria | UCV (2026)</div>
             </div>
         </div>
         <div class="author-badge">
-            <span class="material-icons-outlined" style="font-size:1.1rem;">code</span>
+            <span class="material-icons-outlined" style="font-size:1rem;">code</span>
             Desarrollado por Renzo Ocupa (17/09/2026)
         </div>
     </header>
 
     <div class="container">
-        <!-- Navigation Tabs -->
-        <nav class="tabs">
-            <button class="tab-btn active" onclick="switchTab('tab-predict')">
-                <span class="material-icons-outlined">psychology</span> Diagnóstico Predictivo
-            </button>
-            <button class="tab-btn" onclick="switchTab('tab-metrics')">
-                <span class="material-icons-outlined">bar_chart</span> Métricas del Modelo & Análisis
-            </button>
-            <button class="tab-btn" onclick="switchTab('tab-info')">
-                <span class="material-icons-outlined">info</span> Adaptación Perú & Metodología
-            </button>
-        </nav>
+        <!-- Navigation Tabs Responsivos -->
+        <div class="tabs-wrapper">
+            <nav class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-predict')">
+                    <span class="material-icons-outlined">psychology</span> Diagnóstico Predictivo
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-metrics')">
+                    <span class="material-icons-outlined">bar_chart</span> Métricas & Análisis
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-info')">
+                    <span class="material-icons-outlined">info</span> Metodología Perú
+                </button>
+            </nav>
+        </div>
 
         <!-- TAB 1: DIAGNÓSTICO PREDICTIVO -->
         <div id="tab-predict" class="tab-content active">
@@ -948,36 +1008,38 @@ def serve_dashboard():
                         <span class="material-icons-outlined">pie_chart</span>
                         Distribución de Clases del Dataset UCI (4,424 Filas)
                     </div>
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>Estado Final</th>
-                                <th>Clase Binarizada</th>
-                                <th>Estudiantes</th>
-                                <th>Porcentaje</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Graduate (Graduado)</strong></td>
-                                <td>0 (Éxito)</td>
-                                <td>2,209</td>
-                                <td>49.9%</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Dropout (Abandonó)</strong></td>
-                                <td>1 (Riesgo)</td>
-                                <td>1,421</td>
-                                <td>32.1%</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Enrolled (Continuante)</strong></td>
-                                <td>0 (Éxito)</td>
-                                <td>794</td>
-                                <td>17.9%</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Estado Final</th>
+                                    <th>Clase Binarizada</th>
+                                    <th>Estudiantes</th>
+                                    <th>Porcentaje</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Graduate (Graduado)</strong></td>
+                                    <td>0 (Éxito)</td>
+                                    <td>2,209</td>
+                                    <td>49.9%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Dropout (Abandonó)</strong></td>
+                                    <td>1 (Riesgo)</td>
+                                    <td>1,421</td>
+                                    <td>32.1%</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Enrolled (Continuante)</strong></td>
+                                    <td>0 (Éxito)</td>
+                                    <td>794</td>
+                                    <td>17.9%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -1038,14 +1100,15 @@ def serve_dashboard():
             }
         }
 
-        // Render Gauge con transición animada
+        // Render Gauge con ajuste responsivo de tamaño
         function renderGauge(value, title, color) {
+            const isMobile = window.innerWidth <= 768;
             const data = [{
                 type: "indicator",
                 mode: "gauge+number",
                 value: value,
-                number: { suffix: "%", font: { size: 38, family: "Google Sans" } },
-                title: { text: "Probabilidad de Deserción", font: { size: 15, family: "Google Sans" } },
+                number: { suffix: "%", font: { size: isMobile ? 30 : 38, family: "Google Sans" } },
+                title: { text: "Probabilidad de Deserción", font: { size: isMobile ? 13 : 15, family: "Google Sans" } },
                 gauge: {
                     axis: { range: [0, 100], tickwidth: 1, tickcolor: "#5F6368" },
                     bar: { color: color, width: 0.25 },
@@ -1061,7 +1124,7 @@ def serve_dashboard():
             }];
 
             const layout = {
-                margin: { t: 30, r: 30, l: 30, b: 30 },
+                margin: { t: 25, r: 20, l: 20, b: 25 },
                 paper_bgcolor: "rgba(0,0,0,0)",
                 font: { color: "#202124", family: "Roboto" }
             };
@@ -1071,22 +1134,24 @@ def serve_dashboard():
 
         // Render Gráficos de Métricas de Evaluación
         function renderMetricsCharts() {
+            const isMobile = window.innerWidth <= 768;
+            
             // Matriz de Confusión
             const cmData = [{
                 z: [[562, 39], [65, 219]],
-                x: ['Pred: Graduado/Continuante', 'Pred: Dropout (Deserción)'],
-                y: ['Real: Graduado/Continuante', 'Real: Dropout (Deserción)'],
+                x: [isMobile ? 'Graduado' : 'Pred: Graduado', isMobile ? 'Dropout' : 'Pred: Dropout'],
+                y: [isMobile ? 'Graduado' : 'Real: Graduado', isMobile ? 'Dropout' : 'Real: Dropout'],
                 type: 'heatmap',
                 colorscale: 'Blues',
                 showscale: false
             }];
             const cmLayout = {
-                margin: { t: 20, r: 20, l: 120, b: 40 },
+                margin: { t: 20, r: 10, l: isMobile ? 70 : 110, b: 40 },
                 annotations: [
-                    { x: 'Pred: Graduado/Continuante', y: 'Real: Graduado/Continuante', text: '562 (TN)', showarrow: false, font: { size: 16, color: 'white' } },
-                    { x: 'Pred: Dropout (Deserción)', y: 'Real: Graduado/Continuante', text: '39 (FP)', showarrow: false, font: { size: 16, color: 'black' } },
-                    { x: 'Pred: Graduado/Continuante', y: 'Real: Dropout (Deserción)', text: '65 (FN)', showarrow: false, font: { size: 16, color: 'black' } },
-                    { x: 'Pred: Dropout (Deserción)', y: 'Real: Dropout (Deserción)', text: '219 (TP)', showarrow: false, font: { size: 16, color: 'white' } }
+                    { x: isMobile ? 'Graduado' : 'Pred: Graduado', y: isMobile ? 'Graduado' : 'Real: Graduado', text: '562 (TN)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'white' } },
+                    { x: isMobile ? 'Dropout' : 'Pred: Dropout', y: isMobile ? 'Graduado' : 'Real: Graduado', text: '39 (FP)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'black' } },
+                    { x: isMobile ? 'Graduado' : 'Pred: Graduado', y: isMobile ? 'Dropout' : 'Real: Dropout', text: '65 (FN)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'black' } },
+                    { x: isMobile ? 'Dropout' : 'Pred: Dropout', y: isMobile ? 'Dropout' : 'Real: Dropout', text: '219 (TP)', showarrow: false, font: { size: isMobile ? 12 : 15, color: 'white' } }
                 ]
             };
             Plotly.react('confusionPlot', cmData, cmLayout, { responsive: true, displayModeBar: false });
@@ -1110,8 +1175,8 @@ def serve_dashboard():
                 marker: { color: '#4285F4' }
             }];
             const impLayout = {
-                margin: { t: 20, r: 20, l: 140, b: 30 },
-                xaxis: { title: 'Importancia Relativa XGBoost' }
+                margin: { t: 15, r: 15, l: isMobile ? 110 : 130, b: 30 },
+                xaxis: { title: 'Importancia Relativa' }
             };
             Plotly.react('importancePlot', impData, impLayout, { responsive: true, displayModeBar: false });
 
@@ -1124,21 +1189,26 @@ def serve_dashboard():
                     [0.42, 0.39, 0.76, 1.0, -0.09],
                     [0.12, 0.08, -0.05, -0.09, 1.0]
                 ],
-                x: ['Nota Admisión', 'Nota Previa', 'Aprobados C1', 'Aprobados C2', 'PBI / Macro'],
-                y: ['Nota Admisión', 'Nota Previa', 'Aprobados C1', 'Aprobados C2', 'PBI / Macro'],
+                x: ['Admisión', 'Previa', 'Aprob C1', 'Aprob C2', 'Macro'],
+                y: ['Admisión', 'Previa', 'Aprob C1', 'Aprob C2', 'Macro'],
                 type: 'heatmap',
                 colorscale: 'RdBu',
                 zmin: -1, zmax: 1
             }];
             const corrLayout = {
-                margin: { t: 20, r: 20, l: 90, b: 60 }
+                margin: { t: 15, r: 15, l: 65, b: 50 }
             };
             Plotly.react('correlationPlot', corrData, corrLayout, { responsive: true, displayModeBar: false });
         }
 
-        // Carga del Gauge por defecto al iniciar
+        // Carga inicial y redimensionamiento dinámico
         window.addEventListener('DOMContentLoaded', () => {
             renderGauge(15.5, "Diagnóstico Inicial", "#34A853");
+        });
+
+        window.addEventListener('resize', () => {
+            renderGauge(15.5, "Diagnóstico Inicial", "#34A853");
+            renderMetricsCharts();
         });
 
         async function handlePredict(e) {
@@ -1196,6 +1266,11 @@ def serve_dashboard():
                 const recList = document.getElementById('recList');
                 recList.innerHTML = result.recomendaciones.map(r => `<li>${r}</li>`).join('');
                 recBox.style.display = 'block';
+
+                // Scroll suave hasta el resultado en celular
+                if (window.innerWidth <= 768) {
+                    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+                }
 
             } catch (err) {
                 alert("Error al realizar la predicción: " + err.message);
